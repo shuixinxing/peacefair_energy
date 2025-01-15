@@ -22,7 +22,7 @@ from homeassistant.const import (
     CONF_HOST,
     CONF_PORT,
     CONF_SLAVE,
-    DEVICE_CLASS_ENERGY
+    UnitOfEnergy
 )
 
 from homeassistant.const import ATTR_ENTITY_ID
@@ -145,7 +145,7 @@ class PeacefairCoordinator(DataUpdateCoordinator):
 
     def reset_energy(self):
         self._hub.reset_energy()
-        self.data[DEVICE_CLASS_ENERGY] = 0.0
+        self.data[UnitOfEnergy] = 0.0
 
     def set_update(self, update):
         self._updates = update
