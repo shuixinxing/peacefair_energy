@@ -1,8 +1,8 @@
 import logging
 import asyncio
 from pymodbus.client import ModbusTcpClient, ModbusUdpClient
-from pymodbus.transaction import ModbusRtuFramer, ModbusIOException
-from pymodbus.pdu import ModbusRequest
+from pymodbus.exceptions import ModbusIOException
+from pymodbus.framer import FramerType
 import threading
 
 try:
@@ -35,20 +35,6 @@ HPG_SENSOR_TYPES = [
 
 _LOGGER = logging.getLogger(__name__)
 
-class ModbusResetEnergyRequest(ModbusRequest):
-    _rtu_frame_size = 4
-    function_code = 0x42
-    def __init__(self, **kwargs):
-        ModbusRequest.__init__(self, **kwargs)
-
-    def encode(self):
-        return b''
-
-    def get_response_pdu_size(self):
-        return 4
-
-    def __str__(self):
-        return "ModbusResetEnergyRequest"
 
 class ModbusHub:
     def __init__(self, protocol, host, port, slave):
@@ -58,19 +44,15 @@ class ModbusHub:
             self._client = ModbusTcpClient(
                 host=host,
                 port=port,
-                framer=ModbusRtuFramer,
-                timeout=2,
-                retry_on_empty=True,
-                retry_on_invalid=False
+                framer=FramerType.RTU,
+                timeout=2
             )
         elif protocol == "rtuoverudp":
             self._client = ModbusUdpClient(
                 host=host,
                 port=port,
-                framer=ModbusRtuFramer,
-                timeout=2,
-                retry_on_empty=False,
-                retry_on_invalid=False
+                framer=FramerType.RTU,
+                timeout=2
             )
 
     def connect(self):
@@ -84,8 +66,8 @@ class ModbusHub:
     # 新增同步版本，供线程池调用
     def read_input_registers_sync(self, address, count):
         with self._lock:
-            kwargs = {"slave": self._slave}
-            return self._client.read_input_registers(address, count, **kwargs)
+            kwargs = {"slave": self._slave, "count": count}
+            return self._client.read_input_registers(address, **kwargs)
 
     # 异步版本，交给线程池执行，避免阻塞事件循环
     async def read_input_registers(self, address, count):
@@ -100,8 +82,8 @@ class ModbusHub:
     def reset_energy(self):
         with self._lock:
             kwargs = {"slave": self._slave}
-            request = ModbusResetEnergyRequest(**kwargs)
-            self._client.execute(request)
+#             request = ModbusResetEnergyRequest(**kwargs)
+#             self._client.execute(request)
 
     # 异步版本info_gather
     async def info_gather(self):

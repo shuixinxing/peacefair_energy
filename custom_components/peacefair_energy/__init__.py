@@ -99,7 +99,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry):
 
 async def async_unload_entry(hass: HomeAssistant, config_entry):
 
-    await hass.config_entries.async_forward_entry_unloads(config_entry, ["sensor"])
+    await hass.config_entries.async_forward_entry_unload(config_entry, "sensor")
 
     host = config_entry.data[CONF_HOST]
     host = host.replace(".", "_")
