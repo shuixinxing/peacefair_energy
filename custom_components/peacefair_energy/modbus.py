@@ -66,7 +66,8 @@ class ModbusHub:
     # 新增同步版本，供线程池调用
     def read_input_registers_sync(self, address, count):
         with self._lock:
-            kwargs = {"slave": self._slave, "count": count}
+            # kwargs = {"unit": self._slave, "count": count}
+            kwargs = {"count": count}
             return self._client.read_input_registers(address, **kwargs)
 
     # 异步版本，交给线程池执行，避免阻塞事件循环
@@ -81,7 +82,7 @@ class ModbusHub:
 
     def reset_energy(self):
         with self._lock:
-            kwargs = {"slave": self._slave}
+            kwargs = {"unit": self._slave}
 #             request = ModbusResetEnergyRequest(**kwargs)
 #             self._client.execute(request)
 
